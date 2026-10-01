@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tulip Bank - Demo Banking App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#f3f1ec;--card:#fff;--ink:#16252b;--mute:#5d6b70;--pri:#0f4c5c;--pri-ink:#fff;--acc:#b8650b;--ok:#157347;--err:#b3261e;--line:#d9d5ca;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1a1e;--card:#16262c;--ink:#e8efef;--mute:#9fb0b4;--pri:#5fb3c7;--pri-ink:#06222a;--acc:#f0a350;--ok:#5fd08f;--err:#ff8a80;--line:#2b3e45}}
+:root[data-theme="dark"]{--bg:#0e1a1e;--card:#16262c;--ink:#e8efef;--mute:#9fb0b4;--pri:#5fb3c7;--pri-ink:#06222a;--acc:#f0a350;--ok:#5fd08f;--err:#ff8a80;--line:#2b3e45}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Segoe UI",system-ui,-apple-system,"Noto Sans","Noto Sans Devanagari","Noto Sans Tamil",Roboto,sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;background:var(--pri);color:var(--pri-ink);flex-wrap:wrap}
+header h1{margin:0;font-size:1.25rem;letter-spacing:.2px}
+.bar{display:flex;gap:10px;align-items:center}
+select,input,button{font:inherit;color:inherit}
+select{padding:6px 8px;border-radius:6px;border:1px solid var(--line);background:var(--card)}
+main{max-width:760px;margin:0 auto;padding:20px 16px 48px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:16px}
+h2{margin:0 0 12px;font-size:1.15rem}
+label{display:block;margin:12px 0 4px;font-weight:600}
+input{width:100%;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+input:focus,button:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:1px}
+button.p{margin-top:16px;padding:10px 18px;border:0;border-radius:6px;background:var(--pri);color:var(--pri-ink);font-weight:600;cursor:pointer}
+button.l{background:transparent;border:1px solid var(--pri-ink);color:var(--pri-ink);padding:6px 12px;border-radius:6px;cursor:pointer}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+nav button{padding:8px 14px;border:1px solid var(--line);border-radius:20px;background:var(--card);cursor:pointer}
+nav button[aria-selected="true"]{background:var(--pri);color:var(--pri-ink);border-color:var(--pri)}
+dl{display:grid;grid-template-columns:max-content 1fr;gap:8px 20px;margin:0}
+dt{color:var(--mute)}dd{margin:0;font-weight:600;word-break:break-word}
+.bal{font-size:2.2rem;font-weight:700;color:var(--pri);margin:4px 0}
+.msg{margin-top:12px;font-weight:600}.msg.e{color:var(--err)}.msg.s{color:var(--ok)}
+.hint{color:var(--mute);font-size:.9rem;margin-top:14px}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:480px}
+th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left}
+td.n{text-align:right;white-space:nowrap}
+.cr{color:var(--ok)}.dr{color:var(--err)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1>&#127799; <span data-i="bank"></span></h1>
+  <div class="bar">
+    <select id="lang" aria-label="Language">
+      <option value="en">English</option><option value="hi">&#2361;&#2367;&#2306;&#2342;&#2368;</option><option value="ta">&#2980;&#2990;&#3007;&#2996;&#3021;</option>
+    </select>
+    <button class="l" id="logout" hidden data-i="logout"></button>
+  </div>
+</header>
+<main>
+<section id="loginView" class="card">
+  <h2 data-i="loginTitle"></h2>
+  <label for="u" data-i="username"></label><input id="u" autocomplete="username">
+  <label for="p" data-i="password"></label><input id="p" type="password" autocomplete="current-password">
+  <button class="p" id="loginBtn" data-i="login"></button>
+  <div id="loginMsg" class="msg e" role="alert"></div>
+  <p class="hint" data-i="demoHint"></p>
+</section>
+
+<section id="appView" hidden>
+  <p id="welcome"></p>
+  <nav role="tablist">
+    <button data-t="details" data-i="tDetails"></button>
+    <button data-t="balance" data-i="tBalance"></button>
+    <button data-t="transfer" data-i="tTransfer"></button>
+    <button data-t="history" data-i="tHistory"></button>
+  </nav>
+  <div id="details" class="card" data-pane>
+    <h2 data-i="tDetails"></h2>
+    <dl><dt data-i="holder"></dt><dd id="dName"></dd><dt data-i="accNo"></dt><dd id="dNo"></dd><dt data-i="accType"></dt><dd id="dType"></dd><dt data-i="branch"></dt><dd id="dBranch"></dd><dt data-i="opened"></dt><dd id="dOpen"></dd></dl>
+  </div>
+  <div id="balance" class="card" data-pane hidden>
+    <h2 data-i="tBalance"></h2>
+    <div class="bal" id="bBal"></div>
+    <div class="hint"><span data-i="asOf"></span> <span id="bTime"></span></div>
+    <button class="p" id="refresh" data-i="refresh"></button>
+  </div>
+  <div id="transfer" class="card" data-pane hidden>
+    <h2 data-i="tTransfer"></h2>
+    <label for="to" data-i="toAcc"></label><input id="to" inputmode="numeric" maxlength="4">
+    <label for="amt" data-i="amount"></label><input id="amt" inputmode="decimal">
+    <label for="rem" data-i="remarks"></label><input id="rem" maxlength="30">
+    <button class="p" id="sendBtn" data-i="send"></button>
+    <div id="tMsg" class="msg" role="alert"></div>
+    <p class="hint" data-i="limitHint"></p>
+  </div>
+  <div id="history" class="card" data-pane hidden>
+    <h2 data-i="tHistory"></h2>
+    <div class="scroll"><table><thead><tr><th data-i="date"></th><th data-i="time"></th><th data-i="desc"></th><th class="n" data-i="amount"></th><th class="n" data-i="balAfter"></th></tr></thead><tbody id="hBody"></tbody></table></div>
+  </div>
+</section>
+</main>
+<script>
+"use strict";
+var LIMIT = 100000, MAXTRY = 3;
+var T = {
+ en:{loc:"en-IN",bank:"Tulip Bank",logout:"Logout",loginTitle:"Sign in",username:"Username",password:"Password",login:"Sign in",demoHint:"Demo only. Dummy users: user1 / Pass@123 and user2 / Pass@456.",tDetails:"Account details",tBalance:"Balance enquiry",tTransfer:"Fund transfer",tHistory:"Transaction history",holder:"Account holder",accNo:"Account number",accType:"Account type",branch:"Branch",opened:"Opened on",asOf:"Balance as of",refresh:"Refresh balance",toAcc:"Beneficiary account number",amount:"Amount",remarks:"Remarks (optional)",send:"Transfer money",limitHint:"Limit per transfer: ",date:"Date",time:"Time",desc:"Description",balAfter:"Balance",welcome:"Welcome, ",
+  eEmpty:"Enter both username and password.",eBad:"Wrong username or password.",eLock:"Account locked after 3 failed attempts.",eNoAcc:"Beneficiary account does not exist.",eSelf:"You cannot transfer to your own account.",eAmt:"Enter a valid amount greater than 0 (max 2 decimals).",eFunds:"Insufficient balance.",eLimit:"Amount exceeds the per-transfer limit.",ok:"Transfer successful. Reference: ",sav:"Savings",none:"No transactions yet.",tin:"Received from ",tout:"Sent to ",opening:"Opening balance"},
+ hi:{loc:"hi-IN",bank:"ट्यूलिप बैंक",logout:"लॉग आउट",loginTitle:"साइन इन",username:"उपयोगकर्ता नाम",password:"पासवर्ड",login:"साइन इन",demoHint:"केवल डेमो। डमी उपयोगकर्ता: user1 / Pass@123 और user2 / Pass@456।",tDetails:"खाता विवरण",tBalance:"शेष राशि पूछताछ",tTransfer:"फंड ट्रांसफर",tHistory:"लेन-देन इतिहास",holder:"खाताधारक",accNo:"खाता संख्या",accType:"खाता प्रकार",branch:"शाखा",opened:"खोलने की तिथि",asOf:"शेष राशि का समय",refresh:"शेष राशि ताज़ा करें",toAcc:"लाभार्थी खाता संख्या",amount:"राशि",remarks:"टिप्पणी (वैकल्पिक)",send:"पैसे भेजें",limitHint:"प्रति ट्रांसफर सीमा: ",date:"तारीख",time:"समय",desc:"विवरण",balAfter:"शेष",welcome:"स्वागत है, ",
+  eEmpty:"उपयोगकर्ता नाम और पासवर्ड दोनों दर्ज करें।",eBad:"उपयोगकर्ता नाम या पासवर्ड गलत है।",eLock:"3 गलत प्रयासों के बाद खाता लॉक हो गया।",eNoAcc:"लाभार्थी खाता मौजूद नहीं है।",eSelf:"आप अपने ही खाते में ट्रांसफर नहीं कर सकते।",eAmt:"0 से अधिक मान्य राशि दर्ज करें (अधिकतम 2 दशमलव)।",eFunds:"अपर्याप्त शेष राशि।",eLimit:"राशि प्रति ट्रांसफर सीमा से अधिक है।",ok:"ट्रांसफर सफल। संदर्भ: ",sav:"बचत",none:"अभी कोई लेन-देन नहीं।",tin:"प्राप्त: ",tout:"भेजा: ",opening:"प्रारंभिक शेष"},
+ ta:{loc:"ta-IN",bank:"டூலிப் வங்கி",logout:"வெளியேறு",loginTitle:"உள்நுழை",username:"பயனர் பெயர்",password:"கடவுச்சொல்",login:"உள்நுழை",demoHint:"டெமோ மட்டும். போலி பயனர்கள்: user1 / Pass@123, user2 / Pass@456.",tDetails:"கணக்கு விவரங்கள்",tBalance:"இருப்பு விசாரணை",tTransfer:"நிதி பரிமாற்றம்",tHistory:"பரிவர்த்தனை வரலாறு",holder:"கணக்கு உரிமையாளர்",accNo:"கணக்கு எண்",accType:"கணக்கு வகை",branch:"கிளை",opened:"தொடங்கிய தேதி",asOf:"இருப்பு நேரம்",refresh:"இருப்பைப் புதுப்பி",toAcc:"பெறுநர் கணக்கு எண்",amount:"தொகை",remarks:"குறிப்பு (விருப்பம்)",send:"பணம் அனுப்பு",limitHint:"ஒரு பரிமாற்ற வரம்பு: ",date:"தேதி",time:"நேரம்",desc:"விவரம்",balAfter:"இருப்பு",welcome:"வரவேற்கிறோம், ",
+  eEmpty:"பயனர் பெயர் மற்றும் கடவுச்சொல் இரண்டையும் உள்ளிடவும்.",eBad:"பயனர் பெயர் அல்லது கடவுச்சொல் தவறு.",eLock:"3 தவறான முயற்சிகளுக்குப் பின் கணக்கு பூட்டப்பட்டது.",eNoAcc:"பெறுநர் கணக்கு இல்லை.",eSelf:"உங்கள் சொந்த கணக்குக்கு அனுப்ப முடியாது.",eAmt:"0-ஐ விட அதிகமான சரியான தொகையை உள்ளிடவும் (அதிகபட்சம் 2 தசமம்).",eFunds:"போதிய இருப்பு இல்லை.",eLimit:"தொகை ஒரு பரிமாற்ற வரம்பை மீறுகிறது.",ok:"பரிமாற்றம் வெற்றி. குறிப்பு எண்: ",sav:"சேமிப்பு",none:"பரிவர்த்தனைகள் இல்லை.",tin:"பெற்றது: ",tout:"அனுப்பியது: ",opening:"தொடக்க இருப்பு"}
+};
+var lang = "en", user = null, tries = {}, msgKey = {login:null,t:null}, tab = "details", refTime = new Date(), refNo = 1000;
+var day = 86400000, now = Date.now();
+var users = {user1:{pw:"Pass@123",acc:"1001"}, user2:{pw:"Pass@456",acc:"1002"}};
+var accts = {
+ "1001":{name:"Pavan Kumar",branch:"Chengalpattu",opened:new Date(2021,5,15),bal:50000,tx:[{d:new Date(now-9*day),k:"opening",amt:48500,bal:48500,dir:1},{d:new Date(now-5*day),k:"in",who:"Anita Rao",amt:2500.5,bal:51000.5,dir:1},{d:new Date(now-2*day),k:"out",who:"Ravi Menon",amt:1000.5,bal:50000,dir:-1}]},
+ "1002":{name:"Ravi Menon",branch:"Chennai",opened:new Date(2019,10,3),bal:25000,tx:[{d:new Date(now-6*day),k:"opening",amt:25000,bal:25000,dir:1}]},
+ "1003":{name:"Anita Rao",branch:"Madurai",opened:new Date(2022,1,20),bal:10000,tx:[{d:new Date(now-6*day),k:"opening",amt:10000,bal:10000,dir:1}]}
+};
+function $(id){return document.getElementById(id)}
+function tr(k){return T[lang][k]||T.en[k]}
+function money(n){return new Intl.NumberFormat(tr("loc"),{style:"currency",currency:"INR"}).format(n)}
+function dfmt(d){return new Intl.DateTimeFormat(tr("loc"),{day:"2-digit",month:"short",year:"numeric"}).format(d)}
+function tfmt(d){return new Intl.DateTimeFormat(tr("loc"),{hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(d)}
+function mask(a){return "XXXXXX"+a}
+function render(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i]").forEach(function(e){e.textContent=tr(e.dataset.i)});
+  document.title = tr("bank");
+  $("loginMsg").textContent = msgKey.login ? tr(msgKey.login) : "";
+  var tm=$("tMsg"); tm.textContent = msgKey.t ? (msgKey.t.ok ? tr("ok")+msgKey.t.ref : tr(msgKey.t.k)) : "";
+  tm.className = "msg " + (msgKey.t && msgKey.t.ok ? "s" : "e");
+  document.querySelector("#transfer .hint").textContent = tr("limitHint") + money(LIMIT);
+  if(!user) return;
+  var a = accts[user.acc];
+  $("welcome").textContent = tr("welcome") + a.name;
+  $("dName").textContent = a.name; $("dNo").textContent = mask(user.acc); $("dType").textContent = tr("sav");
+  $("dBranch").textContent = a.branch; $("dOpen").textContent = dfmt(a.opened);
+  $("bBal").textContent = money(a.bal); $("bTime").textContent = dfmt(refTime)+", "+tfmt(refTime);
+  var rows = a.tx.slice().reverse().map(function(t){
+    var desc = t.k==="opening"?tr("opening"):(t.k==="in"?tr("tin"):tr("tout"))+t.who;
+    return "<tr><td>"+dfmt(t.d)+"</td><td>"+tfmt(t.d)+"</td><td></td><td class='n "+(t.dir>0?"cr":"dr")+"'>"+(t.dir>0?"+":"-")+money(t.amt)+"</td><td class='n'>"+money(t.bal)+"</td></tr>";
+  }).join("");
+  $("hBody").innerHTML = rows || "<tr><td colspan='5'>"+tr("none")+"</td></tr>";
+  var trs = $("hBody").querySelectorAll("tr");
+  a.tx.slice().reverse().forEach(function(t,i){ if(trs[i].children[2]) trs[i].children[2].textContent = t.k==="opening"?tr("opening"):(t.k==="in"?tr("tin"):tr("tout"))+t.who; });
+}
+function show(t){
+  tab=t;
+  document.querySelectorAll("[data-pane]").forEach(function(p){p.hidden = p.id!==t});
+  document.querySelectorAll("nav button").forEach(function(b){b.setAttribute("aria-selected", b.dataset.t===t)});
+}
+function login(){
+  var n=$("u").value.trim(), p=$("p").value;
+  if(!n||!p){msgKey.login="eEmpty";return render()}
+  if((tries[n]||0)>=MAXTRY){msgKey.login="eLock";return render()}
+  var u=users[n];
+  if(!u||u.pw!==p){
+    tries[n]=(tries[n]||0)+1;
+    msgKey.login = tries[n]>=MAXTRY ? "eLock" : "eBad";
+    return render();
+  }
+  tries[n]=0; user=u; msgKey.login=null; refTime=new Date();
+  $("loginView").hidden=true; $("appView").hidden=false; $("logout").hidden=false;
+  show("details"); render();
+}
+function logout(){
+  user=null; $("u").value=""; $("p").value=""; msgKey={login:null,t:null};
+  $("appView").hidden=true; $("loginView").hidden=false; $("logout").hidden=true; render();
+}
+function send(){
+  var to=$("to").value.trim(), raw=$("amt").value.trim(), rem=$("rem").value.trim();
+  var a=accts[user.acc];
+  function fail(k){msgKey.t={k:k};render()}
+  if(!accts[to]) return fail("eNoAcc");
+  if(to===user.acc) return fail("eSelf");
+  if(!/^\d+(\.\d{1,2})?$/.test(raw) || parseFloat(raw)<=0) return fail("eAmt");
+  var amt=Math.round(parseFloat(raw)*100)/100;
+  if(amt>LIMIT) return fail("eLimit");
+  if(amt>a.bal) return fail("eFunds");
+  var b=accts[to], d=new Date();
+  a.bal=Math.round((a.bal-amt)*100)/100; b.bal=Math.round((b.bal+amt)*100)/100;
+  a.tx.push({d:d,k:"out",who:b.name,amt:amt,bal:a.bal,dir:-1});
+  b.tx.push({d:d,k:"in",who:a.name,amt:amt,bal:b.bal,dir:1});
+  refNo++; msgKey.t={ok:true,ref:"TXN"+refNo};
+  $("to").value="";$("amt").value="";$("rem").value="";
+  refTime=d; render();
+}
+$("loginBtn").onclick=login;
+$("p").onkeydown=function(e){if(e.key==="Enter")login()};
+$("logout").onclick=logout;
+$("sendBtn").onclick=send;
+$("refresh").onclick=function(){refTime=new Date();render()};
+document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){show(b.dataset.t)}});
+$("lang").onchange=function(){lang=this.value;try{localStorage.setItem("lang",lang)}catch(e){}render()};
+try{var s=localStorage.getItem("lang");if(s&&T[s]){lang=s;$("lang").value=s}}catch(e){}
+render();
+</script>
+</body>
+</html>
